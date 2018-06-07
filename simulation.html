@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Projectile Simulation</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+    <style>
+        canvas {
+            background-color: #eee;
+            display: "block";
+            margin: 0 auto;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <center>
+        <h1>Projectile Motion Simulation</h1>
+        <h4>Robert Koch - 7th period</h4>
+
+
+        <canvas id="myCanvas" width="800" height="400" style="border:1px solid #000000;"></canvas><br>
+
+        <div class="row">
+
+            <div class="col-sm-6 panel panel-primary">
+                <div class="panel-heading">Variables</div>
+                <div class="panel-body">
+                    <form>
+                        <p>Initital Velocity (X-direction)</p>
+                        <input type="text" id="vInitialX">m/s
+                        <p>Initital Velocity (Y-direction)</p>
+                        <input type="text" id="vInitialY">m/s
+                        <p>Time</p>
+                        <strong><div id="time"></div></strong>
+                        <p>Distance</p>
+                        <strong><div id="dist"></div></strong>
+
+
+                    </form>
+                </div>
+            </div>
+            <div class="col-sm-6 panel panel-info">
+                <div class="panel-heading">Options</div>
+                <div class="panel-body">
+                    <button id="goFS" class="btn btn-primary">Fullscreen App
+                    </button>
+
+                </div>
+            </div>
+
+        </div>
+
+        <script type="text/javascript">
+            var goFS = document.getElementById("goFS");
+            goFS.addEventListener("click", function() {
+
+                var doc = window.document;
+                var docEl = doc.documentElement;
+
+                var requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
+                var cancelFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
+
+                if (!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) {
+                    requestFullScreen.call(docEl);
+                }
+                else {
+                    cancelFullScreen.call(doc);
+                }
+
+            }, false);
+        </script>
+
+
+        <button class="btn btn-primary" id="run">Run Simulation</button>
+        <button class="btn btn-info" id="increase">Increase View</button>
+        <br><br>
+        <button class="btn btn-danger" id="reload">Reset</button>
+        <br><br>
+
+
+    </center>
+
+    <script>
+        var canvas = document.getElementById("myCanvas");
+        var ctx = canvas.getContext("2d");
+        var gravity = (9.81) / 100;
+        var x = 10;
+        var y = 390;
+        var radius = 10;
+        var dx = 2;
+        var dy = -2;
+        var run = false;
+        var end = false;
+        var timer = 0.0;
+        var finalTimer = 0;
+        var distance = 0;
+
+        $("#reload").click(function() {
+            document.location.reload();
+        });
+
+        $("#increase").click(function() {
+            canvas.width += 100;
+            setup();
+        });
+
+        function setup() {
+            drawProjectile();
+        }
+
+        function drawProjectile() {
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, 2 * Math.PI);
+            ctx.fillstyle = "#0033FF";
+            ctx.fillStroke = "#0033FF";
+            ctx.Stroke = "10";
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawProjectile();
+            checkCollision();
+            if (end == false) {
+                x += dx;
+                y += dy;
+                dy += gravity;
+                timer += 0.01;
+
+                document.getElementById("time").innerHTML = timer;
+                document.getElementById("time").innerHTML += " seconds";
+            }
+
+        }
+
+        function checkCollision() {
+            if (y >= 390.00000001) {
+                end = true;
+                finalTimer = timer - 0.01;
+                finalTimer *= 100;
+                Math.floor(finalTimer);
+                finalTimer /= 100;
+                console.log("Final time: " + finalTimer);
+                distance = dx * finalTimer;
+                //distance = (x - 10) / 100 - 0.3;
+                console.log("Final distance: " + distance);
+                document.getElementById("dist").innerHTML = distance;
+                document.getElementById("dist").innerHTML += " meters";
+                document.getElementById("time").innerHTML = finalTimer;
+                document.getElementById("time").innerHTML += " seconds";
+
+            }
+        }
+
+
+        setup();
+
+        $("#run").click(function() {
+            var initialX = document.getElementById("vInitialX").value;
+            var initialY = document.getElementById("vInitialY").value;
+            dx = initialX / 1.0;
+            dy = initialY / -1.0;
+            run = !run;
+            if (run == true) {
+                setInterval(draw, 10);
+            }
+        });
+    </script>
+
+</body>
+
+</html>
