@@ -24,8 +24,12 @@
         <h1>Projectile Motion Simulation</h1>
         <h4>Robert Koch - 7th period</h4>
 
+        <canvas id="myCanvas" width="800" height="400" style="border:1px solid #000000;"></canvas><br><br>
 
-        <canvas id="myCanvas" width="800" height="400" style="border:1px solid #000000;"></canvas><br>
+        <div class="alert alert-success alert-dismissible fade in">
+            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a> Welcome to the Projectile Motion Simulation App! Start by entering the inital velocity variables and clicking Run Simulation to calculate distance and time. If the
+            projectile goes off screen, you can increase the view to see where it landed or reset the simulation.</div>
+
 
         <div class="row">
 
@@ -37,27 +41,45 @@
                         <input type="text" id="vInitialX">m/s
                         <p>Initital Velocity (Y-direction)</p>
                         <input type="text" id="vInitialY">m/s
+                        <hr>
                         <p>Time</p>
                         <strong><div id="time"></div></strong>
-                        <p>Distance</p>
+                        <p>Distance (X-direction)</p>
                         <strong><div id="dist"></div></strong>
-
+                        <!--
+                        <p>Max Height (Y-direction)</p>
+                        <strong><div id="maxH"></div></strong>
+                        -->
 
                     </form>
                 </div>
             </div>
+
             <div class="col-sm-6 panel panel-info">
                 <div class="panel-heading">Options</div>
                 <div class="panel-body">
-                    <button id="goFS" class="btn btn-primary">Fullscreen App
-                    </button>
+
+                    <button id="challenge" class="btn btn-success">Challenge Mode</button>
+
+                    <p>Goal Distance:<strong><div id="randomDist"></div></strong></p>
+                    <div id="challengeResult"></div>
+                    <hr>
+                    <button id="goFS" class="btn btn-default">Fullscreen App</button>
+                    <hr>
+                    <strong>Gravity</strong>
+                    <form action="/action_page.php">
+                        <input type="radio" id="earthRadio" name="planet" value="earth" checked> Earth - 9.81 m/s squared<br>
+                        <input type="radio" id="moonRadio" name="planet" value="moon"> Moon - 1.62 m/s squared<br>
+                        <input type="radio" id="marsRadio" name="planet" value="mars"> Mars - 3.71 m/s squared<br>
+
+                    </form>
 
                 </div>
             </div>
 
         </div>
 
-        <script type="text/javascript">
+        <script>
             var goFS = document.getElementById("goFS");
             goFS.addEventListener("click", function() {
 
@@ -90,7 +112,8 @@
     <script>
         var canvas = document.getElementById("myCanvas");
         var ctx = canvas.getContext("2d");
-        var gravity = (9.81) / 100;
+        canvas.width = screen.width - 40;
+        var gravity = (9.807) / 100;
         var x = 10;
         var y = 390;
         var radius = 10;
@@ -101,6 +124,12 @@
         var timer = 0.0;
         var finalTimer = 0;
         var distance = 0;
+        var randomDistance = 0;
+        var leftbound;
+        var rightbound;
+        var challengeModeHappening = false;
+        var maxHeight = 400;
+        var initialY = 0;
 
         $("#reload").click(function() {
             document.location.reload();
@@ -110,6 +139,35 @@
             canvas.width += 100;
             setup();
         });
+
+        $("#challenge").click(function() {
+            challengeMode();
+        });
+
+
+        function challengeMode() {
+            if (challengeModeHappening == false) {
+                setup();
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                challengeModeHappening = true;
+                randomDistance = Math.floor(Math.random() * canvas.width);
+                console.log("Random distance: " + randomDistance);
+                leftbound = randomDistance - 10;
+                rightbound = randomDistance + 10;
+                console.log("Leftbound: " + leftbound);
+                console.log("Rightbound: " + rightbound);
+
+                document.getElementById("randomDist").innerHTML = randomDistance / 100;
+                document.getElementById("randomDist").innerHTML += " meters";
+
+                ctx.rect(leftbound, 395, 20, 5);
+                ctx.fill();
+                ctx.stroke();
+            }
+
+        }
+
+
 
         function setup() {
             drawProjectile();
@@ -129,6 +187,11 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             drawProjectile();
             checkCollision();
+
+            if (challengeModeHappening) {
+                ctx.rect(leftbound, 395, 20, 5);
+            }
+
             if (end == false) {
                 x += dx;
                 y += dy;
@@ -137,6 +200,7 @@
 
                 document.getElementById("time").innerHTML = timer;
                 document.getElementById("time").innerHTML += " seconds";
+                checkCollision();
             }
 
         }
@@ -144,18 +208,38 @@
         function checkCollision() {
             if (y >= 390.00000001) {
                 end = true;
-                finalTimer = timer - 0.01;
+                finalTimer = timer - 0.02;
+
                 finalTimer *= 100;
-                Math.floor(finalTimer);
+                finalTimer = Math.round(finalTimer);
                 finalTimer /= 100;
-                console.log("Final time: " + finalTimer);
+
                 distance = dx * finalTimer;
-                //distance = (x - 10) / 100 - 0.3;
-                console.log("Final distance: " + distance);
+                distance *= 100;
+                distance = Math.round(distance);
+                distance /= 100;
+
                 document.getElementById("dist").innerHTML = distance;
                 document.getElementById("dist").innerHTML += " meters";
                 document.getElementById("time").innerHTML = finalTimer;
                 document.getElementById("time").innerHTML += " seconds";
+
+                if (challengeModeHappening) {
+                    if (distance < leftbound && x < leftbound) {
+                        document.getElementById("challengeResult").innerHTML = "You were " + (leftbound - distance) / 100 + " meters to the left of the goal";
+                    }
+                    else if (distance > rightbound && x > rightbound) {
+                        document.getElementById("challengeResult").innerHTML = "You were " + (distance - rightbound) / 100 + " meters to the right of the goal";
+                    }
+                    else {
+                        document.getElementById("challengeResult").innerHTML = "You landed in the goal!";
+
+                    }
+                }
+
+                //maxHeight = ((initialY + dy) / 2) * finalTimer;
+                //document.getElementById("maxH").innerHTML = (4 - (maxHeight / 100));
+                //document.getElementById("maxH").innerHTML += " meters";
 
             }
         }
@@ -166,6 +250,9 @@
         $("#run").click(function() {
             var initialX = document.getElementById("vInitialX").value;
             var initialY = document.getElementById("vInitialY").value;
+            if ($('#earthRadio').is(':checked')) { gravity = 9.807 / 100; }
+            if ($('#moonRadio').is(':checked')) { gravity = 1.62 / 100; }
+            if ($('#marsRadio').is(':checked')) { gravity = 3.71 / 100; }
             dx = initialX / 1.0;
             dy = initialY / -1.0;
             run = !run;
