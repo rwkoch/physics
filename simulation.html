@@ -225,16 +225,23 @@
                 document.getElementById("time").innerHTML += " seconds";
 
                 if (challengeModeHappening) {
-                    if (distance < leftbound && x < leftbound) {
-                        document.getElementById("challengeResult").innerHTML = "You were " + (leftbound - distance) / 100 + " meters to the left of the goal";
+
+                    console.log("Final X: " + x);
+
+                    if (x < leftbound) {
+                        document.getElementById("challengeResult").innerHTML = "You were " + (randomDistance - x) / 100 + " meters to the left of the goal";
                     }
-                    else if (distance > rightbound && x > rightbound) {
-                        document.getElementById("challengeResult").innerHTML = "You were " + (distance - rightbound) / 100 + " meters to the right of the goal";
+                    else if (x > rightbound) {
+                        document.getElementById("challengeResult").innerHTML = "You were " + (x - randomDistance) / 100 + " meters to the right of the goal";
                     }
                     else {
                         document.getElementById("challengeResult").innerHTML = "You landed in the goal!";
 
                     }
+
+                    ctx.rect(leftbound, 395, 20, 5);
+                    ctx.fill();
+
                 }
 
                 //maxHeight = ((initialY + dy) / 2) * finalTimer;
